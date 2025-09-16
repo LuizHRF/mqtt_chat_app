@@ -22,8 +22,13 @@ void ChatCallback::message_arrived(mqtt::const_message_ptr msg)
 
         if (message.type == MESSAGE_TYPE_MESSAGE) {
 
-            if (mqttClient->currentTopic == msg->get_topic())  //Se o usuario estiver na conversa
-                std::cout << "[" << message.timestamp << "] " << message.sender << ": " << message.text << std::endl;
+
+            if (msg->get_topic() == mqttClient->currentTopic || mqttClient->getUsername() == message.sender) {
+                displayMessage(message);
+            }else{
+                
+                mqttClient->myMessages[msg->get_topic()].push_back(j);
+            }
 
         } else if (message.type == MESSAGE_TYPE_STATUS) {
 
@@ -62,7 +67,7 @@ bool MqttClient::connect(const std::string &user, const std::string &pass)
     {
         connOpts.set_user_name(user);
         connOpts.set_password(pass);
-
+        connOpts.set_clean_session(false);
         std::cout << "Conectando ao broker em " << serverAddress << "..." << std::endl;
         auto tok = client.connect(connOpts);
         tok->wait();
@@ -100,7 +105,7 @@ bool MqttClient::publish_message(const std::string &topic, const std::string &me
     }
 }
 
-bool MqttClient::publish_request(const std::string &topic, const std::string &message, int qos = 1, int type)
+bool MqttClient::publish_request(const std::string &topic, const std::string &message,  int type, int qos)
 {
     try
     {
@@ -148,3 +153,28 @@ void MqttClient::disconnect()
         std::cerr << "❌ Erro ao desconectar: " << exc.what() << std::endl;
     }
 }
+
+void MqttClient::display_pending_messages(std::string topic){
+    if (myMessages.find(topic) != myMessages.end()) {
+        
+        std::vector<nlohmann::json> messages = myMessages[topic];
+        for (const auto& msg : messages) {
+            displayMessage(MyMessage::from_json(msg));
+        }
+    }
+}
+
+std::string MqttClient::display_pending_chats(){
+    
+    //ler todas as mensagens em myMessages e
+    //agrupar por tópico
+
+    // o tópico deve ser o outro usuário, 
+    //ou seja, em [usr1, usr2, time] = parse_chat_topic(topic)
+    //qualquer tópico user oposto ao meu
+
+    //com as mensagens agrupadas,
+    //exibir as possibilidades de chat e, qundo o usurio selecionr um,
+    //retornar o tópico selecionado, deltando todas as mensagens pendentes desse tópico
+
+};   

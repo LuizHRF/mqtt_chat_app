@@ -12,7 +12,6 @@
 #define MESSAGE_TYPE_CHAT_REQUEST 2
 #define MESSAGE_TYPE_MESSAGE 3
 
-
 class MqttClient;
 
 class ChatCallback : public virtual mqtt::callback
@@ -29,33 +28,6 @@ public:
     void delivery_complete(mqtt::delivery_token_ptr token) override;
 };
  
-class MqttClient
-{
-private:
-    std::string serverAddress;
-    std::string clientId;
-    std::string username_;
-    mqtt::async_client client;
-    mqtt::connect_options connOpts;
-    ChatCallback cb;
-
-public:
-    MqttClient(const std::string &server, const std::string &username);
-
-    
-    bool connect(const std::string &user, const std::string &pass);
-    bool publish_message(const std::string &topic, const std::string &message, int qos = 1);
-    bool publish_request(const std::string &topic, const std::string &message, int type, int qos = 1);
-    bool subscribe(const std::string &topic, int qos = 1);
-    void disconnect();
-
-    std::string getUsername() const { return username_; }
-    std::vector<nlohmann::json> myRequests;
-    std::string currentTopic;
-};
-
-
-
 class MyMessage {
 public:
     std::string sender;
@@ -85,3 +57,33 @@ public:
         );
     }
 };
+
+class MqttClient
+{
+private:
+    std::string serverAddress;
+    std::string clientId;
+    std::string username_;
+    mqtt::async_client client;
+    mqtt::connect_options connOpts;
+    ChatCallback cb;
+
+public:
+    MqttClient(const std::string &server, const std::string &username);
+
+    
+    bool connect(const std::string &user, const std::string &pass);
+    bool publish_message(const std::string &topic, const std::string &message, int qos = 1);
+    bool publish_request(const std::string &topic, const std::string &message, int type, int qos = 1);
+    bool subscribe(const std::string &topic, int qos = 1);
+    void disconnect();
+    void display_pending_messages(std::string topic);
+    std::string display_pending_chats();  //myChats será uma leitura de myMessages verificando os tópicos existentes - retorna o topico que s desej conversar
+
+    std::string getUsername() const { return username_; }
+    std::vector<nlohmann::json> myRequests;
+    std::unordered_map<std::string, std::vector<nlohmann::json>> myMessages;
+    //std::vector<std::tuple<std::string, std::string, std::string>> myChats; // topic, target_user
+    std::string currentTopic;
+};
+

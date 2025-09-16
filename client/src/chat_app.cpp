@@ -65,12 +65,14 @@ void ChatApp::run() {
                     std::cout << "❌ Por favor, forneça um ID de usuário.\n";
                 } else {
 
-                    client->currentTopic = "chat/" + user_id + "_" + client->getUsername() + getCurrentTimestamp();
-                    client->publish_request(user_id + "_Control", client->currentTopic, 1, MESSAGE_TYPE_CHAT_REQUEST);
+                    client->currentTopic = "chat/" + user_id + "_" + client->getUsername() + "_" + getCurrentTimestamp();
+                    client->publish_request(user_id + "_Control", client->currentTopic, MESSAGE_TYPE_CHAT_REQUEST, 1);
 
                     //std::cout << "Tópico atual: " << client->currentTopic << "\n";
                     system("clear");
                     std::cout << "Sua solicitação foi enviada para " << user_id << "\n";
+                    auto [topic, sender, timestamp] = parse_chat_topic(client->currentTopic);
+                    std::cout << "Convrsa entre " << topic << " e " << sender << " iniciada em " << timestamp << "\n";
                     
                     talk(client.get());
                     
@@ -185,6 +187,7 @@ void talk(MqttClient* client) {
     client->subscribe(client->currentTopic);
 
     std::cout << "Digite /exit para sair da conversa.\n";
+    client->display_pending_messages(client->currentTopic);
     std::string input;
     while (true) {
         std::cout << "> ";
@@ -193,7 +196,7 @@ void talk(MqttClient* client) {
         std::cout.flush();
 
         if (input == "/exit") {
-            client->publish_message(client->currentTopic, client->getUsername() + " saiu da conversa.");
+            client->publish_message(client->currentTopic, "Saiu da conversa.");
 
             //UNSIBSCRIBE DO TÓPICO ??
             //client->unsubscribe(client->currentTopic);
