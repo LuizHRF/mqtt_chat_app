@@ -16,3 +16,5 @@ std::string getCurrentTimestamp();
 void help();
 void displayMessage(MyMessage message);
 std::tuple<std::string, std::string, std::string> parse_chat_topic(std::string topic);
+
+void printWithColor(const std::string& text, const std::string& color, bool bold = false);

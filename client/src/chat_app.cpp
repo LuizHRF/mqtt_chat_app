@@ -70,10 +70,11 @@ void ChatApp::run() {
 
                     //std::cout << "Tópico atual: " << client->currentTopic << "\n";
                     system("clear");
-                    std::cout << "Sua solicitação foi enviada para " << user_id << "\n";
-                    auto [topic, sender, timestamp] = parse_chat_topic(client->currentTopic);
-                    std::cout << "Convrsa entre " << topic << " e " << sender << " iniciada em " << timestamp << "\n";
-                    
+                    //std::cout << "Sua solicitação foi enviada para " << user_id << " [" << client->currentTopic << "]\n";
+                    printWithColor("Sua solicitação foi enviada para ", "blue", false);
+                    printWithColor(user_id, "yellow", true);
+                    printWithColor(" [" + client->currentTopic + "]\n", "blue", false);
+
                     talk(client.get());
                     
                 }
@@ -91,8 +92,23 @@ void ChatApp::run() {
                 client->subscribe(client->currentTopic);
 
                 system("clear");
-                std::cout << "Você está conversando com " << sender << "\n";
-                    
+                std::cout << "Você está conversando com " << sender << " [" << client->currentTopic << "]\n";
+
+                talk(client.get());
+
+            } else {
+                std::cout << "⚠️ Você precisa estar logado primeiro.\n";
+            }
+        }
+
+        else if (input ==  "/mychats") {
+            if (client) {
+
+                std::string topic = client->display_pending_chats();
+                if (topic.empty()) continue;
+
+                std::cout << "Entrando no chat " << topic << "\n";
+                client->currentTopic = topic;
                 talk(client.get());
 
             } else {
@@ -105,6 +121,7 @@ void ChatApp::run() {
                 client->disconnect();
                 client.reset();
             }
+            
             std::cout << "👋 Saindo do chat...\n";
             break;
         }
@@ -186,7 +203,9 @@ std::pair<std::string, std::string> showRequests(const std::vector<nlohmann::jso
 void talk(MqttClient* client) {
     client->subscribe(client->currentTopic);
 
-    std::cout << "Digite /exit para sair da conversa.\n";
+    std::cout << "Digite ";
+    printWithColor("/exit", "red", true);
+    std::cout << " para sair do chat.\n";
     client->display_pending_messages(client->currentTopic);
     std::string input;
     while (true) {
@@ -195,8 +214,10 @@ void talk(MqttClient* client) {
         std::cout << "\33[1A\33[2K\r";
         std::cout.flush();
 
+        if (input.empty()) continue;   
+
         if (input == "/exit") {
-            client->publish_message(client->currentTopic, "Saiu da conversa.");
+            client->publish_message(client->currentTopic, "{Saiu da conversa}");
 
             //UNSIBSCRIBE DO TÓPICO ??
             //client->unsubscribe(client->currentTopic);

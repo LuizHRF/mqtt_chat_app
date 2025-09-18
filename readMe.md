@@ -76,7 +76,8 @@ Lembre-se de adicionar o **@** na frente do identificador do usuário que deseja
 Empasse atual: A persistência de mensagens não funciona corretamente a nível de aplicação.
 
 1. É necessário que um usuário já tenha aceito a *request* de outro usuário para que as mensagens fiquem salvas e sejam entregues  
-[Talvez mudar  estrutura de tópicos e aassinar um tópico mais genérico atrves dos coringas. Desta forma as mensagens enviads antes da request ser aceit ficam salvas no broker]   
+[Talvez mudar  estrutura de tópicos e aassinar um tópico mais genérico atrves dos coringas. Desta forma as mensagens enviads antes da request ser aceit ficam salvas no broker]  ou  
+[Apenas mandara request e abrir o chat somente se a pessoa aceitar]
 2. Uma vez que a *request* é aceita ela some e, em logins posteriores, não é possível acessar a mesma conversa (portanto não recebndo as mensagens persistentes)  
 [Mudar a estrutura 'myRequests' para que represente um conjunto, assim, toda mensagem pode possuir uma request que substituirá a última, tornando a conversa acessível sempre que houverem mensagens] ou  
 [Verificar no broker quais os tópicos cujo um cliente está incrito para pdoer acessar as conversas antigas]

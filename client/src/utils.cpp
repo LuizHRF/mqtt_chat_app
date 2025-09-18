@@ -38,15 +38,12 @@ void help() {
     std::cout << "/register <username> <password> - Registrar um novo usuário\n";
     std::cout << "/login <username> <password>    - Fazer login\n";
     std::cout << "/talk <user_id>                 - Conversar com um usuário\n";
-    std::cout << "/join <group_name>              - Entrar em um grupo de chat (padrão: global)\n";
+    std::cout << "/join <group_name>              - Entrar em um grupo de chat (não implementado)\n";
     std::cout << "/creategroup <group_name>       - Criar um novo grupo de chat\n";
     std::cout << "/myrequests                     - Listar suas solicitações\n";
+    std::cout << "/mychats                        - Listar seus chats pendentes\n";
     std::cout << "/exit                           - Sair do chat\n";
 
-}
-
-void displayMessage(MyMessage message) {
-    std::cout << "[" << message.timestamp << "] " << message.sender << ": " << message.text << std::endl;
 }
 
 std::tuple<std::string, std::string, std::string> parse_chat_topic(std::string topic){  //chat/@maria_@luiz2025-09-16 12:50:12
@@ -67,4 +64,41 @@ std::tuple<std::string, std::string, std::string> parse_chat_topic(std::string t
         }
     }
     return {"", "", ""}; // Invalid format
+}
+
+void printWithColor(const std::string& text, const std::string& color, bool bold) {
+
+    std::string code;
+    std::string reset = "\033[0m";
+
+    if (color == "red") {
+        code = "\033[31m";
+    } else if (color == "green") {
+        code = "\033[32m";
+    } else if (color == "yellow") {
+        code = "\033[33m";
+    } else if (color == "blue") {
+        code = "\033[34m";
+    } else if (color == "magenta") {
+        code = "\033[35m";
+    } else if (color == "cyan") {
+        code = "\033[36m";
+    } else if (color == "white") {
+        code = "\033[37m";
+    } else if (color == "black") {
+        code = "\033[30m";
+    } else {
+        code = reset;
+    }
+
+    if (bold) {
+        code = "\033[1;" + code.substr(2);
+    }
+    std::string final = code + text + reset;
+    std::cout << final;
+}
+
+void displayMessage(MyMessage message) {
+    printWithColor("[" + message.timestamp + "] ", "white", true);
+    std::cout << message.sender << ": " << message.text << std::endl;
 }

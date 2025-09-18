@@ -130,7 +130,7 @@ bool MqttClient::subscribe(const std::string &topic, int qos)
     try
     {
         client.subscribe(topic, qos)->wait();
-        std::cout << "Inscrito no tópico: " << topic << std::endl;
+        //  std::cout << "Inscrito no tópico: " << topic << std::endl;
         return true;
     }
     catch (const mqtt::exception &exc)
@@ -169,7 +169,40 @@ std::string MqttClient::display_pending_chats(){
     //ler todas as mensagens em myMessages e
     //agrupar por tópico
 
-    // o tópico deve ser o outro usuário, 
+    std::unordered_map<std::string, std::string> chats; // @remetente, topico_da_conversa
+
+    for (const auto& [topic, messages] : myMessages) {
+        auto [usr1, usr2, time] = parse_chat_topic(topic);
+        std::string other_user = (usr1 == username_) ? usr2 : usr1;
+        chats[other_user] = topic;
+    }
+
+    if (chats.empty()) {
+        std::cout << "Nenhum chat pendente." << std::endl;
+        return "";
+    }
+
+    std::cout << "Digite o número para acessar o chat" << std::endl;
+    std::cout << "Chats pendentes:" << std::endl;
+    int index = 1;
+    for (const auto& [user, topic] : chats) {
+        std::cout << index++ << ". " << user << std::endl;
+    }
+    std::cout << "> ";
+    std::string input;
+    std::getline(std::cin, input);
+    std::cout << "\33[1A\33[2K\r";
+    std::cout.flush();
+    int chatNumber = std::stoi(input);
+    if (chatNumber > 0 && chatNumber < index) {
+        return std::next(chats.begin(), chatNumber - 1)->second;
+    } else {
+        std::cout << "Número inválido." << std::endl;
+        return "";
+    }
+    return "";
+
+    // o tópico deve ser o outro usuário,
     //ou seja, em [usr1, usr2, time] = parse_chat_topic(topic)
     //qualquer tópico user oposto ao meu
 

@@ -71,7 +71,6 @@ private:
 public:
     MqttClient(const std::string &server, const std::string &username);
 
-    
     bool connect(const std::string &user, const std::string &pass);
     bool publish_message(const std::string &topic, const std::string &message, int qos = 1);
     bool publish_request(const std::string &topic, const std::string &message, int type, int qos = 1);
