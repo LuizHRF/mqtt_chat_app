@@ -34,16 +34,38 @@ std::pair<std::string, std::string> parseLogin(const std::string& input) {
 
 void help() {
     system("clear");
-    std::cout << "Comandos disponíveis:\n";
-    std::cout << "/register <username> <password> - Registrar um novo usuário\n";
-    std::cout << "/login <username> <password>    - Fazer login\n";
-    std::cout << "/talk <user_id>                 - Conversar com um usuário\n";
-    std::cout << "/join <group_name>              - Entrar em um grupo de chat (não implementado)\n";
-    std::cout << "/creategroup <group_name>       - Criar um novo grupo de chat\n";
-    std::cout << "/myrequests                     - Listar suas solicitações\n";
-    std::cout << "/mychats                        - Listar seus chats pendentes\n";
-    std::cout << "/exit                           - Sair do chat\n";
+    printWithColor("Comandos disponíveis:\n", "black", false);
 
+    // Helper lambda to print each command line
+    auto printCommand = [](const std::string& cmd, const std::string& params, const std::string& desc) {
+        printWithColor(cmd, "blue", true);
+        if (!params.empty()) {
+            std::cout << " ";
+            printWithColor(params, "black", true);
+        }
+        std::cout << " - ";
+        printWithColor(desc + "\n", "cyan", false);
+    };
+
+    printCommand("/register", "<username> <password>", "Registrar um novo usuário");
+    printCommand("/login", "<username> <password>   ", "Fazer login");
+    printCommand("/talk", "<user_id>                ", "Envia solicitação para um usuário");
+    printCommand("/join", "<group_name>             ", "Entra em um grupo de chat (não implementado)");
+    printCommand("/creategroup", "<group_name>      ", "Cria um novo grupo de chat (não implementado)");
+    printCommand("/myrequests", "                   ", "Lista suas solicitações");
+    printCommand("/mychats", "                      ", "Lista seus chats pendentes");
+    printCommand("/userstats", "                    ", "Lista o status dos usuários");
+    printCommand("/exit", "                         ", "Sai do chat ou da aplicação"); 
+
+    // std::cout << "/register <username> <password> - Registrar um novo usuário\n";
+    // std::cout << "/login <username> <password>    - Fazer login\n";
+    // std::cout << "/talk <user_id>                 - Evia solicitação para um usuário\n";
+    // std::cout << "/join <group_name>              - Entrar em um grupo de chat (não implementado)\n";
+    // std::cout << "/creategroup <group_name>       - Criar um novo grupo de chat (não implementado)\n";
+    // std::cout << "/myrequests                     - Listar suas solicitações\n";
+    // std::cout << "/mychats                        - Listar seus chats pendentes\n";
+    // std::cout << "/userstats                      - Listar usuários e seus status\n";
+    // std::cout << "/exit                           - Sair do chat\n";
 }
 
 std::tuple<std::string, std::string, std::string> parse_chat_topic(std::string topic){  //chat/@maria_@luiz2025-09-16 12:50:12

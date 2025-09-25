@@ -26,6 +26,7 @@ No Ubuntu/Debian, execute:
 ```bash
 sudo apt update
 sudo apt install mosquitto libpaho-mqttpp3-dev libpaho-mqtt3as-dev g++
+sudo apt-get install libreadline-dev
 ```
 
 ## Como compilar
@@ -33,7 +34,7 @@ sudo apt install mosquitto libpaho-mqttpp3-dev libpaho-mqtt3as-dev g++
 Execute o comando abaixo na raiz do projeto:
 
 ```bash
-g++ client/src/*.cpp -o chat_app.exe -lpaho-mqttpp3 -lpaho-mqtt3as -lpthread
+g++ client/src/*.cpp -o chat_app.exe -lpaho-mqttpp3 -lpaho-mqtt3as -lpthread -lreadline
 ```
 
 ## Como executar

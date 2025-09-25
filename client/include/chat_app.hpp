@@ -4,6 +4,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <readline/readline.h>
+#include <readline/history.h>
 #include <nlohmann/json.hpp>
 
 class MqttClient;

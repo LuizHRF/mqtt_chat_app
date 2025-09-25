@@ -12,8 +12,12 @@ void ChatApp::run() {
     std::unique_ptr<MqttClient> client = nullptr;
 
     while (true) {
-        std::cout << "> ";
-        std::getline(std::cin, input);
+        char* line = readline("> ");
+        if (line) {
+            input = line;
+            if (!input.empty()) add_history(line);
+            free(line);
+        }
         std::cout << "\33[1A\33[2K\r";  
         std::cout.flush();
 
@@ -65,18 +69,16 @@ void ChatApp::run() {
                     std::cout << "❌ Por favor, forneça um ID de usuário.\n";
                 } else {
 
-                    client->currentTopic = "chat/" + user_id + "_" + client->getUsername() + "_" + getCurrentTimestamp();
-                    client->publish_request(user_id + "_Control", client->currentTopic, MESSAGE_TYPE_CHAT_REQUEST, 1);
+                    std::string newTopic = "chat/" + user_id + "_" + client->getUsername() + "_" + getCurrentTimestamp();
+                    client->subscribe(newTopic);
+                    client->publish_request(user_id + "_Control", newTopic, MESSAGE_TYPE_CHAT_REQUEST, 1);
 
                     //std::cout << "Tópico atual: " << client->currentTopic << "\n";
                     system("clear");
                     //std::cout << "Sua solicitação foi enviada para " << user_id << " [" << client->currentTopic << "]\n";
                     printWithColor("Sua solicitação foi enviada para ", "blue", false);
                     printWithColor(user_id, "yellow", true);
-                    printWithColor(" [" + client->currentTopic + "]\n", "blue", false);
-
-                    talk(client.get());
-                    
+                    printWithColor(" [" + newTopic + "]\n", "blue", false);
                 }
             } else {
                 std::cout << "⚠️ Você precisa estar logado primeiro.\n";
@@ -107,12 +109,21 @@ void ChatApp::run() {
                 std::string topic = client->display_pending_chats();
                 if (topic.empty()) continue;
 
+                system("clear");
                 std::cout << "Entrando no chat " << topic << "\n";
                 client->currentTopic = topic;
                 talk(client.get());
 
             } else {
                 std::cout << "⚠️ Você precisa estar logado primeiro.\n";
+            }
+        }
+
+        else if (input ==  "/userstats") {
+            if (client) {
+                client->display_user_status();
+            } else {
+                std::cout << "Você precisa estar logado primeiro.\n";
             }
         }
 
@@ -159,9 +170,13 @@ std::pair<std::string, std::string> showRequests(const std::vector<nlohmann::jso
                     i++;
                 }
             }
-            std::cout << "> ";
             std::string input;
-            std::getline(std::cin, input);
+            char* line = readline("> ");
+            if (line) {
+                input = line;
+                if (!input.empty()) add_history(line);
+                free(line);
+            }
             std::cout << "\33[1A\33[2K\r";
             std::cout.flush();
 
@@ -174,9 +189,13 @@ std::pair<std::string, std::string> showRequests(const std::vector<nlohmann::jso
                 if (requestNumber > 0 && requestNumber <= requests.size()) {
                     auto selectedRequest = requests[requestNumber - 1];
                     std::cout << "Digite 1 para aceitar a solicitação ou 0 para recusar\n";
-                    std::cout << "> ";
                     std::string response;
-                    std::getline(std::cin, response);
+                    char* line = readline("> ");
+                    if (line) {
+                        response = line;
+                        if (!response.empty()) add_history(line);
+                        free(line);
+                    }
                     std::cout << "\33[1A\33[2K\r";
                     std::cout.flush();
 
@@ -209,8 +228,12 @@ void talk(MqttClient* client) {
     client->display_pending_messages(client->currentTopic);
     std::string input;
     while (true) {
-        std::cout << "> ";
-        std::getline(std::cin, input);
+        char* line = readline("> ");
+        if (line) {
+            input = line;
+            if (!input.empty()) add_history(line);
+            free(line);
+        }
         std::cout << "\33[1A\33[2K\r";
         std::cout.flush();
 

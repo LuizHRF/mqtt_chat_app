@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #define MESSAGE_TYPE_INVALID -1
 #define MESSAGE_TYPE_STATUS 0
@@ -71,6 +73,11 @@ private:
 public:
     MqttClient(const std::string &server, const std::string &username);
 
+    
+    bool isConnected() const {
+        return client.is_connected();
+    }
+
     bool connect(const std::string &user, const std::string &pass);
     bool publish_message(const std::string &topic, const std::string &message, int qos = 1);
     bool publish_request(const std::string &topic, const std::string &message, int type, int qos = 1);
@@ -78,11 +85,12 @@ public:
     void disconnect();
     void display_pending_messages(std::string topic);
     std::string display_pending_chats();  //myChats será uma leitura de myMessages verificando os tópicos existentes - retorna o topico que s desej conversar
+    void display_user_status();
 
     std::string getUsername() const { return username_; }
     std::vector<nlohmann::json> myRequests;
     std::unordered_map<std::string, std::vector<nlohmann::json>> myMessages;
-    //std::vector<std::tuple<std::string, std::string, std::string>> myChats; // topic, target_user
+    std::unordered_map<std::string, int> userStatus; // username, status
     std::string currentTopic;
 };
 

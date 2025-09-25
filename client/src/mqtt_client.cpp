@@ -6,6 +6,17 @@ ChatCallback::ChatCallback(MqttClient* client) : mqttClient(client) {}
 void ChatCallback::connected(const std::string &cause)
 {
     std::cout << "Conectado ao broker. " << cause << std::endl;
+
+    // Envia uma mensagem fixa para um tópico a cada X segundos em uma thread separada
+    std::thread([this]() {
+        const std::string topic = "global/USERS";
+        const int interval_seconds = 10; // ajuste o intervalo conforme necessário
+
+        while (mqttClient->isConnected()) {
+            mqttClient->publish_request(topic, "Online", MESSAGE_TYPE_STATUS, 1);
+            std::this_thread::sleep_for(std::chrono::seconds(interval_seconds));
+        }
+    }).detach();
 }
 
 void ChatCallback::connection_lost(const std::string &cause)
@@ -32,7 +43,13 @@ void ChatCallback::message_arrived(mqtt::const_message_ptr msg)
 
         } else if (message.type == MESSAGE_TYPE_STATUS) {
 
-            //mqttClient->myRequests.push_back(j);
+            int status = (message.text == "Online") ? 1 : 0;
+            mqttClient->userStatus[message.sender] = status;
+            
+        } else if (message.type == MESSAGE_TYPE_GROUP_REQUEST) {
+
+            std::cout << "🔔 Pedido de grupo de " << message.sender << ": " << message.text << std::endl;
+            mqttClient->myRequests.push_back(j);
 
         } else if (message.type == MESSAGE_TYPE_CHAT_REQUEST) {
 
@@ -73,9 +90,6 @@ bool MqttClient::connect(const std::string &user, const std::string &pass)
         tok->wait();
         std::cout << "✅ Conectado com sucesso!" << std::endl;
         
-        MyMessage msg(username_, getCurrentTimestamp(), "Online", MESSAGE_TYPE_STATUS);
-
-        client.publish("global/USERS", msg.to_json(), 1, true);
         return true;
     }
     catch (const mqtt::exception &exc)
@@ -144,7 +158,13 @@ void MqttClient::disconnect()
 {
     try
     {
-        client.publish("global/USERS", username_ + " is Offline", 1, false);
+
+        MyMessage msg(username_, getCurrentTimestamp(), "Offline", MESSAGE_TYPE_STATUS);
+        auto payload = msg.to_json();
+        mqtt::message_ptr pubmsg = mqtt::make_message("global/USERS", payload);
+        pubmsg->set_qos(1);
+        client.publish(pubmsg);
+
         client.disconnect()->wait();
         std::cout << "🔌 Desconectado do broker." << std::endl;
     }
@@ -161,6 +181,7 @@ void MqttClient::display_pending_messages(std::string topic){
         for (const auto& msg : messages) {
             displayMessage(MyMessage::from_json(msg));
         }
+        myMessages[topic].clear(); 
     }
 }
 
@@ -188,9 +209,13 @@ std::string MqttClient::display_pending_chats(){
     for (const auto& [user, topic] : chats) {
         std::cout << index++ << ". " << user << std::endl;
     }
-    std::cout << "> ";
     std::string input;
-    std::getline(std::cin, input);
+    char* line = readline("> ");
+    if (line) {
+        input = line;
+        if (!input.empty()) add_history(line);
+        free(line);
+}
     std::cout << "\33[1A\33[2K\r";
     std::cout.flush();
     int chatNumber = std::stoi(input);
@@ -202,12 +227,18 @@ std::string MqttClient::display_pending_chats(){
     }
     return "";
 
-    // o tópico deve ser o outro usuário,
-    //ou seja, em [usr1, usr2, time] = parse_chat_topic(topic)
-    //qualquer tópico user oposto ao meu
-
-    //com as mensagens agrupadas,
-    //exibir as possibilidades de chat e, qundo o usurio selecionr um,
-    //retornar o tópico selecionado, deltando todas as mensagens pendentes desse tópico
 
 };   
+
+void MqttClient::display_user_status(){
+    std::cout << "Status dos usuários:" << std::endl;
+    for (const auto& [user, status] : userStatus) {
+        printWithColor(user + ": ", "cyan", false);
+        if (status == 1) {
+            printWithColor("Online", "green", true);
+        } else {
+            printWithColor("Offline", "red", true);
+        }
+        std::cout << std::endl;
+    }
+}
