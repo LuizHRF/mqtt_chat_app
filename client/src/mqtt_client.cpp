@@ -14,7 +14,15 @@ void ChatCallback::connected(const std::string &cause)
 
         while (mqttClient->isConnected()) {
             mqttClient->publish_request(topic, "Online", MESSAGE_TYPE_STATUS, 1);
+        
+            if (!mqttClient->groupsIHost.empty()){
+                for (const auto& g: mqttClient->groupsIHost)
+
+                    mqttClient->publish_request("global/GROUPS", g["name"]+"::"+mqttClient->getUsername(), MESSAGE_TYPE_NEWGROUP, 1);
+            }
+
             std::this_thread::sleep_for(std::chrono::seconds(interval_seconds));
+            
         }
     }).detach();
 }
@@ -45,15 +53,19 @@ void ChatCallback::message_arrived(mqtt::const_message_ptr msg)
 
             int status = (message.text == "Online") ? 1 : 0;
             mqttClient->userStatus[message.sender] = status;
+        
+        }else if (message.type == MESSAGE_TYPE_NEWGROUP){
+
+            mqttClient->knownGroups.push_back(j);
             
         } else if (message.type == MESSAGE_TYPE_GROUP_REQUEST) {
 
-            std::cout << "🔔 Pedido de grupo de " << message.sender << ": " << message.text << std::endl;
+            std::cout << "Novo pedido de " << message.sender << " para participar do seu grupo " << message.text << std::endl;
             mqttClient->myRequests.push_back(j);
 
         } else if (message.type == MESSAGE_TYPE_CHAT_REQUEST) {
 
-            std::cout << "🔔 Pedido de chat de " << message.sender << ": " << message.text << std::endl;
+            std::cout << "Novo pedido de chat de " << message.sender << ": " << message.text << std::endl;
             mqttClient->myRequests.push_back(j);
 
         } else {
@@ -241,4 +253,8 @@ void MqttClient::display_user_status(){
         }
         std::cout << std::endl;
     }
+}
+
+void MqttClient::display_known_groups(){
+
 }

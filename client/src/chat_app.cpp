@@ -40,6 +40,7 @@ void ChatApp::run() {
 
                 client->subscribe("global/USERS");
                 client->subscribe(user + "_Control");
+                client->subscribe("global/GROUPS");
                 client->currentTopic = "NONE";
                 
 
@@ -80,6 +81,35 @@ void ChatApp::run() {
                     printWithColor(user_id, "yellow", true);
                     printWithColor(" [" + newTopic + "]\n", "blue", false);
                 }
+            } else {
+                std::cout << "⚠️ Você precisa estar logado primeiro.\n";
+            }
+        }
+
+        else if (input.rfind("/creategroup", 0) == 0){
+            if (client){
+
+                std::string group_name = input.substr(13);
+                if (group_name.empty()){
+                    std::cout << "❌ Por favor, forneça um ID de usuário.\n";
+                } else {
+                    std::string topic = group_name + getCurrentTimestamp();
+
+
+                    nlohmann::json new_group;
+                    new_group["name"] = group_name;
+                    new_group["topic"] = topic;
+                    new_group["timestamp"] = getCurrentTimestamp();
+                    new_group["members"] = {client->getUsername()};
+
+                    client->groupsIHost.push_back(new_group);
+
+                    client->subscribe("global/GROUPS/" + topic);
+                    client->publish_request("global/GROUPS", group_name + "::" + client->getUsername(), MESSAGE_TYPE_NEWGROUP, 1);
+                    std::cout << "Novo grupo criado em " << topic <<"\n";
+
+                }
+
             } else {
                 std::cout << "⚠️ Você precisa estar logado primeiro.\n";
             }
@@ -199,16 +229,38 @@ std::pair<std::string, std::string> showRequests(const std::vector<nlohmann::jso
                     std::cout << "\33[1A\33[2K\r";
                     std::cout.flush();
 
-                    if (response == "1") {
-                        std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat\n";
-                        return {selectedRequest["text"], selectedRequest["sender"]};
+                    MyMessage msg = MyMessage::from_json(selectedRequest);
+                    
+                    if (msg.type == MESSAGE_TYPE_GROUP_REQUEST){
 
-                    } else if (response == "0") {
-                        std::cout << "❌ Solicitação recusada.\n";
-                        return {"", ""};
+                        if (response == "1") {
+                            std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat\n";
+
+                            //enviar ao solicitante qual o tópico do grupo
+
+                            return {selectedRequest["text"], selectedRequest["sender"]};
+
+                        } else if (response == "0") {
+                            std::cout << "❌ Solicitação recusada.\n";
+                            return {"", ""};
+                        } else {
+                            std::cout << "Resposta inválida.\n";
+                            continue;
+                        }
+
                     } else {
-                        std::cout << "Resposta inválida.\n";
-                        continue;
+
+                        if (response == "1") {
+                            std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat\n";
+                            return {selectedRequest["text"], selectedRequest["sender"]};
+
+                        } else if (response == "0") {
+                            std::cout << "❌ Solicitação recusada.\n";
+                            return {"", ""};
+                        } else {
+                            std::cout << "Resposta inválida.\n";
+                            continue;
+                        }
                     }
                 } else {
                     std::cout << "Número de solicitação inválido.\n";

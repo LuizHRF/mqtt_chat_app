@@ -13,6 +13,7 @@
 #define MESSAGE_TYPE_GROUP_REQUEST 1
 #define MESSAGE_TYPE_CHAT_REQUEST 2
 #define MESSAGE_TYPE_MESSAGE 3
+#define MESSAGE_TYPE_NEWGROUP 4
 
 class MqttClient;
 
@@ -38,7 +39,7 @@ public:
     int type; 
 
     MyMessage(const std::string& snd, const std::string& time, const std::string& txt, int tp)
-        : sender(snd), timestamp(time), text(txt), type(tp) {}
+        : sender(snd), timestamp(time), text(txt), type(tp){}
 
     nlohmann::json to_json() const {
         nlohmann::json j;
@@ -46,6 +47,7 @@ public:
         j["timestamp"] = timestamp;
         j["text"] = text;
         j["type"] = std::to_string(type);
+
         //std::cout << "Parsing message to json: " << sender << ", " << timestamp << ", " << text << ", " << type << std::endl;
         return j.dump();
     }
@@ -86,10 +88,13 @@ public:
     void display_pending_messages(std::string topic);
     std::string display_pending_chats();  //myChats será uma leitura de myMessages verificando os tópicos existentes - retorna o topico que s desej conversar
     void display_user_status();
+    void display_known_groups();
 
     std::string getUsername() const { return username_; }
     std::vector<nlohmann::json> myRequests;
     std::unordered_map<std::string, std::vector<nlohmann::json>> myMessages;
+    std::vector<nlohmann::json> knownGroups;
+    std::vector<nlohmann::json> groupsIHost;
     std::unordered_map<std::string, int> userStatus; // username, status
     std::string currentTopic;
 };
