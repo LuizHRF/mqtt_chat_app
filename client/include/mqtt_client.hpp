@@ -50,7 +50,11 @@ public:
         j["type"] = std::to_string(type);
 
         //std::cout << "Parsing message to json: " << sender << ", " << timestamp << ", " << text << ", " << type << std::endl;
-        return j.dump();
+        return j;
+    }
+    
+    std::string to_json_string() const {
+        return to_json().dump();
     }
 
     static MyMessage from_json(const nlohmann::json& j) {
@@ -85,6 +89,7 @@ public:
     bool publish_message(const std::string &topic, const std::string &message, int qos = 1);
     bool publish_request(const std::string &topic, const std::string &message, int type, int qos = 1);
     bool subscribe(const std::string &topic, int qos = 1);
+    bool subscribe_async(const std::string &topic, int qos = 1);
     void disconnect();
     void display_pending_messages(std::string topic);
     std::string display_pending_chats();  //myChats será uma leitura de myMessages verificando os tópicos existentes - retorna o topico que s desej conversar

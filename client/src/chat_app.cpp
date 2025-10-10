@@ -174,7 +174,7 @@ void ChatApp::run() {
         else if (input == "/exit") {
             if (client) {
                 client->disconnect();
-                client.reset();
+                client.reset(); 
             }
             
             std::cout << "👋 Saindo do chat...\n";
