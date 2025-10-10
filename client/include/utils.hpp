@@ -10,6 +10,7 @@
 
 std::pair<std::string, std::string> parseRegister(const std::string& input);
 std::pair<std::string, std::string> parseLogin(const std::string& input);
+std::pair<std::string, std::string> parseGroup(const std::string& input);
 
 std::string getCurrentTimestamp();
 

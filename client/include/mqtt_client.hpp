@@ -14,6 +14,7 @@
 #define MESSAGE_TYPE_CHAT_REQUEST 2
 #define MESSAGE_TYPE_MESSAGE 3
 #define MESSAGE_TYPE_NEWGROUP 4
+#define MESSAGE_TYPE_GROUPACCEPTANCE 5
 
 class MqttClient;
 
@@ -88,12 +89,15 @@ public:
     void display_pending_messages(std::string topic);
     std::string display_pending_chats();  //myChats será uma leitura de myMessages verificando os tópicos existentes - retorna o topico que s desej conversar
     void display_user_status();
+
     void display_known_groups();
+    std::string accept_new_member(const std::string& groupName, const std::string& new_member);
+    std::pair<std::string, std::string> showRequests();
 
     std::string getUsername() const { return username_; }
     std::vector<nlohmann::json> myRequests;
     std::unordered_map<std::string, std::vector<nlohmann::json>> myMessages;
-    std::vector<nlohmann::json> knownGroups;
+    std::unordered_map<std::string, nlohmann::json> knownGroups;
     std::vector<nlohmann::json> groupsIHost;
     std::unordered_map<std::string, int> userStatus; // username, status
     std::string currentTopic;

@@ -32,6 +32,16 @@ std::pair<std::string, std::string> parseLogin(const std::string& input) {
     return {user, pass};
 }
 
+std::pair<std::string, std::string> parseGroup(const std::string& input) {
+    std::istringstream iss(input);
+    std::string cmd, group, by, owner;
+    iss >> cmd >> group >> by >> owner;
+    if (owner.empty() || owner[0] != '@') {
+        return {"", ""};
+    }
+    return {group, owner};
+}
+
 void help() {
     system("clear");
     printWithColor("Comandos disponíveis:\n", "black", false);
@@ -47,15 +57,16 @@ void help() {
         printWithColor(desc + "\n", "cyan", false);
     };
 
-    printCommand("/register", "<username> <password>", "Registrar um novo usuário");
-    printCommand("/login", "<username> <password>   ", "Fazer login");
-    printCommand("/talk", "<user_id>                ", "Envia solicitação para um usuário");
-    printCommand("/join", "<group_name>             ", "Entra em um grupo de chat (não implementado)");
-    printCommand("/creategroup", "<group_name>      ", "Cria um novo grupo de chat (não implementado)");
-    printCommand("/myrequests", "                   ", "Lista suas solicitações");
-    printCommand("/mychats", "                      ", "Lista seus chats pendentes");
-    printCommand("/userstats", "                    ", "Lista o status dos usuários");
-    printCommand("/exit", "                         ", "Sai do chat ou da aplicação"); 
+    printCommand("/register", "<username> <password>     ", "Registrar um novo usuário");
+    printCommand("/login", "<username> <password>        ", "Fazer login");
+    printCommand("/talk", "@<user_id>                    ", "Envia solicitação para um usuário");
+    printCommand("/join", "<group_name> by @<group_owner>", "Entra em um grupo de chat");
+    printCommand("/creategroup", "<group_name>           ", "Cria um novo grupo de chat");
+    printCommand("/availablegroups", "                   ", "Lista os grupos disponíveis");
+    printCommand("/myrequests", "                        ", "Lista suas solicitações");
+    printCommand("/mychats", "                           ", "Lista seus chats pendentes");
+    printCommand("/userstats", "                         ", "Lista o status dos usuários");
+    printCommand("/exit", "                              ", "Sai do chat ou da aplicação"); 
 
     // std::cout << "/register <username> <password> - Registrar um novo usuário\n";
     // std::cout << "/login <username> <password>    - Fazer login\n";
