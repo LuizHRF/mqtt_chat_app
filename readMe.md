@@ -3,14 +3,16 @@
 
 Aplicação de bate-papo simples via terminal, utilizando o protocolo MQTT com o broker Mosquitto rodando localmente. 
 
-Permite conversasa individuais [em grupo no futuro]
+Permite conversasa individuais e em grupo
 
 ## Funcionalidades
 
-- Registro e login de usuários
-- Envio e recebimento de mensagens em tempo real
+- Registro e login de usuários (no próprio broker)
+- Envio e recebimento de mensagens *one on one*
 - Envio de solicitação de conversa
-- Bate papo direto (*Direct Message*)
+- Envio de solicitação para ingresso em bate papos de grupo
+- Gerenciamento de solicitações
+- Salvamento de mensagens não vizualizadas
 - Interação através de comandos básicos via terminal
 
 ## Requisitos
@@ -29,7 +31,7 @@ sudo apt install mosquitto libpaho-mqttpp3-dev libpaho-mqtt3as-dev g++
 sudo apt-get install libreadline-dev
 ```
 
-## Como compilar
+## Para compilar
 
 Execute o comando abaixo na raiz do projeto:
 
@@ -37,14 +39,14 @@ Execute o comando abaixo na raiz do projeto:
 g++ client/src/*.cpp -o chat_app.exe -lpaho-mqttpp3 -lpaho-mqtt3as -lpthread -lreadline
 ```
 
-## Como executar
+## Para executar
 
-1. Inicie o broker Mosquitto localmente:
+1. Inicie o broker Mosquitto localmente utilizando as configurações na pasta ``broker``:
     ```bash
     mosquitto -c broker/mosquitto.conf
     ```
 
-*Nota: Após cadastrar um usuário, pode ser necessário reiniciar o broker para que ele aceite a conexão (?)*
+*Nota: Após cadastrar um usuário, pode ser necessário reiniciar o broker para que ele aceite a conexão*
 
 2. Execute o aplicativo de chat (em diferentes terminais):
     ```bash
@@ -59,26 +61,26 @@ Lembre-se de adicionar o **@** na frente do identificador do usuário que deseja
 
 ## Comandos disponíveis
 
+- ``/help`` - Mostra todos os comandos disponíveis
 - `/register <identificador> <senha>` — Registrar novo usuário
 - `/login <identificador> <senha>` — Fazer login
 - `/talk @<identificador>` — Solicitar conversa com alguém
-- `/myrequests` — Visualizar as solicitações de mensagem pra você
+- `/creategroup <nome>` - Cria um grupo e define você como líder
+- `/join <nome_do_grupo> by @<id_lider>` - Solicita a entrada em um grupo 'nome_do_grupo' liderado por 'id_lider'
+- `/mychats` - Mostra as mensgaens pendentes que você possui
+- `/myrequests` — Gerenciar as solicitações de mensagem e grupos enviadas para você
+- `/userstats` - Mostra o status (online/offline) dos usuários conhecidos
+- `/availablegroups` - Mostra os grupos conhecidos e o nome de seus líderes
 - `/exit` — Sair do chat
 - Qualquer outra mensagem será enviada para a sala atual
 
 ## Observações
 
 - O cadastro de usuários é feito localmente no arquivo `broker/users.db`.
-- As mensagens são trocadas via tópicos MQTT, cada sala corresponde a um tópico.
+- As mensagens são trocadas via tópicos MQTT, cada conversa corresponde a um tópico (id_user_1_id_user_2_timestamp).
 - O aplicativo é apenas para fins de estudo/demonstração.
 
 ---
 
-Empasse atual: A persistência de mensagens não funciona corretamente a nível de aplicação.
-
-1. É necessário que um usuário já tenha aceito a *request* de outro usuário para que as mensagens fiquem salvas e sejam entregues  
-[Talvez mudar  estrutura de tópicos e aassinar um tópico mais genérico atrves dos coringas. Desta forma as mensagens enviads antes da request ser aceit ficam salvas no broker]  ou  
-[Apenas mandara request e abrir o chat somente se a pessoa aceitar]
-2. Uma vez que a *request* é aceita ela some e, em logins posteriores, não é possível acessar a mesma conversa (portanto não recebndo as mensagens persistentes)  
-[Mudar a estrutura 'myRequests' para que represente um conjunto, assim, toda mensagem pode possuir uma request que substituirá a última, tornando a conversa acessível sempre que houverem mensagens] ou  
-[Verificar no broker quais os tópicos cujo um cliente está incrito para pdoer acessar as conversas antigas]
+*Luiz Henrique Rigo Faccio*  
+*2211100003*
