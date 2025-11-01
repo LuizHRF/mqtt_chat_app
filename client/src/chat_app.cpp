@@ -53,12 +53,12 @@ void ChatApp::run() {
 
                 auto[group_name, group_owner] = parseGroup(input);
                 if (group_name.empty() || group_owner.empty()){
-                    std::cout << "Não é possível entrar neste grupo! Verifique o comando.\n";
+                    std::cout << "Forneça um nome de grupo e ID de usuário válidos!\n";
                     continue;
                 }
 
                 client->publish_request(group_owner + "_Control", group_name, MESSAGE_TYPE_GROUP_REQUEST, 1);
-                std::cout << "Sua solicitação para entrar no grupo " << group_name << " foi enviada para " << group_owner << ".\n";
+                std::cout << "\nA solicitação para entrar no grupo " << group_name << " foi enviada para " << group_owner << ".\nSe o grupo existir e " << group_owner<< " for o líder, ele poderá analisar sua solicitação!\n\n";
 
 
             } else {
@@ -120,7 +120,9 @@ void ChatApp::run() {
 
                     client->subscribe(topic);
                     client->publish_request("global/GROUPS", group_name + "::" + client->getUsername(), MESSAGE_TYPE_NEWGROUP, 1);
-                    std::cout << "Novo grupo criado em " << topic <<"\n";
+                    std::cout << "Novo grupo ";
+                    printWithColor(group_name, "yellow", true);
+                    std::cout << " criado com sucesso!\n";
 
                 }
 
@@ -138,7 +140,7 @@ void ChatApp::run() {
                 client->subscribe(client->currentTopic);
 
                 system("clear");
-                std::cout << "Você está conversando com " << sender << " [" << client->currentTopic << "]\n";
+                std::cout << "Você está conversando com " << sender << "\n";
 
                 talk(client.get());
 
@@ -153,8 +155,13 @@ void ChatApp::run() {
                 std::string topic = client->display_pending_chats();
                 if (topic.empty()) continue;
 
+                std::string groupName = parseGroupTopic(topic);
+
                 system("clear");
-                std::cout << "Entrando no chat " << topic << "\n";
+                
+                std::cout << "Você está no chat de grupo ";
+                printWithColor(groupName+"\n", "yellow", true);
+
                 client->currentTopic = topic;
                 talk(client.get());
 

@@ -42,6 +42,29 @@ std::pair<std::string, std::string> parseGroup(const std::string& input) {
     return {group, owner};
 }
 
+std::string parseGroupTopic(const std::string& input) {  // global/GROUPS/amigos_-_2025-10-30_20:01:20
+    const std::string prefix = "global/GROUPS/";
+
+    // Garante que o prefixo está presente
+    if (input.rfind(prefix, 0) != 0) {
+        throw std::invalid_argument("Tópico inválido: prefixo ausente");
+    }
+
+    // Pega a parte depois de "global/GROUPS/"
+    std::string after_prefix = input.substr(prefix.size());
+
+    // Procura o separador "_-_"
+    size_t pos = after_prefix.find("_-_");
+    if (pos == std::string::npos) {
+        throw std::invalid_argument("Tópico inválido: separador '_-_' não encontrado");
+    }
+
+    // Extrai o nome do grupo
+    std::string group_name = after_prefix.substr(0, pos);
+
+    return group_name;
+}
+
 void help() {
     system("clear");
     printWithColor("Comandos disponíveis:\n", "black", false);

@@ -69,9 +69,20 @@ void ChatCallback::message_arrived(mqtt::const_message_ptr msg)
         else if (message.type == MESSAGE_TYPE_GROUP_REQUEST)
         {
 
-            std::cout << "Novo pedido de " << message.sender << " para participar do seu grupo " << message.text << std::endl;
+            for (const auto& g : mqttClient->groupsIHost) {
 
-            mqttClient->myRequests.push_back(j);
+                if (g["name"] == message.text){
+
+                    std::cout << "Novo pedido de " << message.sender << " para participar do seu grupo " << message.text << std::endl;
+
+                    mqttClient->myRequests.push_back(j);
+
+                    break;
+
+                }
+
+            }
+
         }
         else if (message.type == MESSAGE_TYPE_CHAT_REQUEST)
         {
@@ -239,10 +250,7 @@ void MqttClient::display_pending_messages(std::string topic)
 std::string MqttClient::display_pending_chats()
 {
 
-    // ler todas as mensagens em myMessages e
-    // agrupar por tópico
-
-    std::unordered_map<std::string, std::string> chats; // @remetente, topico_da_conversa
+    std::unordered_map<std::string, std::string> chats;
 
     for (const auto &[topic, messages] : myMessages)
     {
@@ -260,6 +268,7 @@ std::string MqttClient::display_pending_chats()
                 if (pos2 != std::string::npos)
                 {
                     group_name = group_name.substr(0, pos2);
+                    group_name = group_name.append(" [Grupo]");
                     chats[group_name] = topic;
                 }
             }
@@ -270,6 +279,14 @@ std::string MqttClient::display_pending_chats()
             std::string other_user = (usr1 == username_) ? usr2 : usr1;
             chats[other_user] = topic;
         }
+    }
+
+    for(const auto g: groupsIHost){
+
+        std::string name = g["name"];
+        name = name.append(" [Grupo]");
+        chats[name] = g["topic"];
+
     }
 
     if (chats.empty())
@@ -442,16 +459,18 @@ std::pair<std::string, std::string> MqttClient::showRequests()
 
                         if (response == "1")
                         {
-                            std::cout << "✅ Solicitação aceita.\n Agora ele(a) faz parte do grupo!\n";
+                            std::cout << "✅ Solicitação aceita. Agora ele(a) faz parte do grupo!\n";
 
                             std::string topic = accept_new_member(msg.text, msg.sender);
-                            publish_message(topic, "Bem-vindo ao grupo " + msg.text + "," + msg.sender + "!", 1);
+                            publish_message(topic, "Bem-vindo ao grupo " + msg.text + ", " + msg.sender + "!", 1);
+                            requests.erase(requests.begin()+requestNumber-1);
 
                             return {"", ""};
                         }
                         else if (response == "0")
                         {
                             std::cout << "❌ Solicitação recusada.\n";
+                            requests.erase(requests.begin()+requestNumber-1);
                             return {"", ""};
                         }
                         else
@@ -466,11 +485,13 @@ std::pair<std::string, std::string> MqttClient::showRequests()
                         if (response == "1")
                         {
                             std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat\n";
+                            requests.erase(requests.begin()+requestNumber-1);
                             return {selectedRequest["text"], selectedRequest["sender"]};
                         }
                         else if (response == "0")
                         {
                             std::cout << "❌ Solicitação recusada.\n";
+                            requests.erase(requests.begin()+requestNumber-1);
                             return {"", ""};
                         }
                         else
@@ -479,6 +500,7 @@ std::pair<std::string, std::string> MqttClient::showRequests()
                             continue;
                         }
                     }
+
                 }
                 else
                 {
