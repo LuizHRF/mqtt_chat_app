@@ -90,6 +90,8 @@ void help() {
     printCommand("/mychats", "                           ", "Lista seus chats pendentes");
     printCommand("/userstats", "                         ", "Lista o status dos usuários");
     printCommand("/exit", "                              ", "Sai do chat ou da aplicação"); 
+    printCommand("/whoami", "                            ", "Mostra qual usário está logado"); 
+
 
     // std::cout << "/register <username> <password> - Registrar um novo usuário\n";
     // std::cout << "/login <username> <password>    - Fazer login\n";
@@ -143,6 +145,8 @@ void printWithColor(const std::string& text, const std::string& color, bool bold
         code = "\033[37m";
     } else if (color == "black") {
         code = "\033[30m";
+    } else if (color == "gray") {
+        code = "\033[90m";
     } else {
         code = reset;
     }

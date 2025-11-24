@@ -87,7 +87,7 @@ void ChatCallback::message_arrived(mqtt::const_message_ptr msg)
         else if (message.type == MESSAGE_TYPE_CHAT_REQUEST)
         {
 
-            std::cout << "Novo pedido de chat de " << message.sender << ": " << message.text << std::endl;
+            std::cout << "Novo pedido de chat de " << message.sender << std::endl;
             mqttClient->myRequests.push_back(j);
         }
         else if (message.type == MESSAGE_TYPE_GROUPACCEPTANCE)
@@ -254,7 +254,7 @@ std::string MqttClient::display_pending_chats()
 
     for (const auto &[topic, messages] : myMessages)
     {
-        std::cout << "Analizando tópico: " << topic << std::endl;
+
         auto [usr1, usr2, time] = parse_chat_topic(topic);
 
         if (usr1.empty() || usr2.empty() || time.empty())
@@ -291,16 +291,17 @@ std::string MqttClient::display_pending_chats()
 
     if (chats.empty())
     {
-        std::cout << "Nenhum chat pendente." << std::endl;
+        printWithColor("Nenhum chat pendente!", "red", true);
         return "";
     }
 
-    std::cout << "Digite o número para acessar o chat" << std::endl;
+    printWithColor("Digite o número do chat para acessá-lo!\n", "blue", true);
     std::cout << "Chats pendentes:" << std::endl;
     int index = 1;
     for (const auto &[user, topic] : chats)
     {
-        std::cout << index++ << ". " << user << std::endl;
+        std::cout << index++ << ". ";
+        printWithColor(user + '\n', "black", true);
     }
     std::string input;
     char *line = readline("> ");
@@ -348,7 +349,7 @@ void MqttClient::display_known_groups()
 {
 
     system("clear");
-    std::cout << "Grupos conhecidos:" << std::endl;
+    printWithColor("GRUPOS DISPONÍVEIS:", "cyan", true);
 
     for (const auto &g : knownGroups)
     {
@@ -367,7 +368,8 @@ void MqttClient::display_known_groups()
             owner = "";
         }
 
-        std::cout << "Grupo: " << group_name << " | Host: " << owner << std::endl;
+        printWithColor(group_name, "magenta", false);
+        printWithColor(" [by " + owner + "]\n", "gray", false);
     }
 }
 
@@ -386,7 +388,10 @@ std::pair<std::string, std::string> MqttClient::showRequests()
         while (true)
         {
             system("clear");
-            std::cout << "SUAS SOLICITAÇÕES\nDigite o número da solicitação para interagir ou utilize /exit para voltar.\n\n";
+            printWithColor("SUAS SOLICITAÇÕES\n", "yellow", true);
+            std::cout << "Digite o número da solicitação para interagir ou utilize ";
+            printWithColor("/exit", "red", true);
+            std::cout << " para retornar\n";
             int i = 1;
             for (const auto &req : requests)
             {
@@ -484,7 +489,9 @@ std::pair<std::string, std::string> MqttClient::showRequests()
 
                         if (response == "1")
                         {
-                            std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat\n";
+                            std::cout << "✅ Solicitação aceita.\n Você será redirecionado ao chat com";
+                            printWithColor(selectedRequest["sender"], "yellow", true);
+                            std::cout << "\n";
                             requests.erase(requests.begin()+requestNumber-1);
                             return {selectedRequest["text"], selectedRequest["sender"]};
                         }

@@ -58,7 +58,8 @@ void ChatApp::run() {
                 }
 
                 client->publish_request(group_owner + "_Control", group_name, MESSAGE_TYPE_GROUP_REQUEST, 1);
-                std::cout << "\nA solicitação para entrar no grupo " << group_name << " foi enviada para " << group_owner << ".\nSe o grupo existir e " << group_owner<< " for o líder, ele poderá analisar sua solicitação!\n\n";
+                std::string message_text = "\nA solicitação para entrar no grupo " + group_name + " foi enviada para " + group_owner + ".\nSe o grupo existir e " + group_owner + " for o líder, ele poderá analisar sua solicitação!\n\n";
+                printWithColor(message_text, "gray", false);
 
 
             } else {
@@ -155,13 +156,17 @@ void ChatApp::run() {
                 std::string topic = client->display_pending_chats();
                 if (topic.empty()) continue;
 
-                std::string groupName = parseGroupTopic(topic);
-
                 system("clear");
-                
-                std::cout << "Você está no chat de grupo ";
-                printWithColor(groupName+"\n", "yellow", true);
 
+                try {
+                    std::string groupName = parseGroupTopic(topic);
+    
+                    std::cout << "Você está no chat de grupo ";
+                    printWithColor(groupName+"\n", "yellow", true);
+                } catch (std::invalid_argument e) {
+                    std::cout << "Entrando na conversa!\n";
+                }
+                
                 client->currentTopic = topic;
                 talk(client.get());
 
@@ -173,6 +178,15 @@ void ChatApp::run() {
         else if (input ==  "/userstats") {
             if (client) {
                 client->display_user_status();
+            } else {
+                std::cout << "Você precisa estar logado primeiro.\n";
+            }
+        }
+
+        else if (input == "/whoami") {
+            if (client) {
+                std::cout << "\n\tVocê está logado como ";
+                printWithColor(client->getUsername() + "\n\n", "yellow", true);
             } else {
                 std::cout << "Você precisa estar logado primeiro.\n";
             }
