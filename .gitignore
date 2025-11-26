@@ -41,3 +41,5 @@ mosquitto.db
 
 # debug information files
 *.dwo
+
+.vscode
